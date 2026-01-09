@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE 50 Stock Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SSE 50 Stock Tracker</h1>
+            <p class="subtitle">Real-time tracking of Shanghai Stock Exchange 50 Index constituents</p>
+            <div class="last-update">Last updated: <span id="lastUpdate">--</span></div>
+        </header>
+
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search by stock name or code..." />
+            </div>
+            <div class="filter-container">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect">
+                    <option value="code">Stock Code</option>
+                    <option value="name">Name</option>
+                    <option value="price">Price</option>
+                    <option value="change">Change %</option>
+                    <option value="volume">Volume</option>
+                    <option value="marketCap">Market Cap</option>
+                </select>
+                <select id="filterSelect">
+                    <option value="all">All Stocks</option>
+                    <option value="gainers">Gainers</option>
+                    <option value="losers">Losers</option>
+                    <option value="unchanged">Unchanged</option>
+                </select>
+            </div>
+            <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-label">Total Stocks</div>
+                <div class="stat-value" id="totalStocks">50</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Gainers</div>
+                <div class="stat-value green" id="gainers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Losers</div>
+                <div class="stat-value red" id="losers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unchanged</div>
+                <div class="stat-value" id="unchanged">0</div>
+            </div>
+        </div>
+
+        <div class="stock-grid" id="stockGrid">
+            <div class="loading">Loading stock data...</div>
+        </div>
+
+        <div id="chartModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="chartTitle">Stock Chart</h2>
+                <div class="chart-controls">
+                    <button class="time-btn active" data-period="1d">1D</button>
+                    <button class="time-btn" data-period="5d">5D</button>
+                    <button class="time-btn" data-period="1m">1M</button>
+                    <button class="time-btn" data-period="3m">3M</button>
+                    <button class="time-btn" data-period="1y">1Y</button>
+                </div>
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

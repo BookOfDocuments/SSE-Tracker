@@ -1,152 +1,154 @@
-# SSE 50 Stock Tracker
+# serve-index
 
-A real-time web application for tracking stocks from the Shanghai Stock Exchange 50 Index (SSE 50).
+[![NPM Version][npm-image]][npm-url]
+[![NPM Downloads][downloads-image]][downloads-url]
+[![Linux Build][travis-image]][travis-url]
+[![Windows Build][appveyor-image]][appveyor-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
+[![Gratipay][gratipay-image]][gratipay-url]
 
-## Features
+  Serves pages that contain directory listings for a given path.
 
-- **Real-time Stock Data**: Track all 50 constituent stocks with current prices and changes
-- **Search & Filter**: Search by stock name or code, filter by gainers/losers
-- **Sorting Options**: Sort by code, name, price, change percentage, volume, or market cap
-- **Historical Charts**: View price history with interactive charts (1D, 5D, 1M, 3M, 1Y)
-- **Auto-refresh**: Data automatically refreshes every 30 seconds
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Statistics Overview**: Quick view of gainers, losers, and unchanged stocks
+## Install
 
-## Getting Started
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
-### Prerequisites
-
-- Node.js (v14 or higher)
-- npm (comes with Node.js)
-- A modern web browser (Chrome, Firefox, Safari, or Edge)
-
-### Installation
-
-1. Clone or download this repository
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-
-The app will automatically open in your browser at `http://localhost:3000`
-
-### Running in Cursor
-
-If you're using Cursor IDE:
-
-1. Open the project folder in Cursor
-2. Open the integrated terminal (Ctrl + ` or Cmd + `)
-3. Run:
-   ```bash
-   npm install
-   npm start
-   ```
-4. The app will launch in your default browser
-
-### Available Scripts
-
-- `npm start` or `npm run dev` - Starts the development server with live reload
-- The server automatically refreshes when you make changes to HTML, CSS, or JS files
-
-## Usage
-
-### Viewing Stocks
-
-- All 50 SSE stocks are displayed in cards showing:
-  - Stock name and code
-  - Current price
-  - Change percentage (color-coded: green for gains, red for losses)
-  - Trading volume
-  - Market capitalization
-  - Daily high and low prices
-
-### Search & Filter
-
-- **Search**: Type in the search box to filter by stock name or code
-- **Sort**: Use the dropdown to sort stocks by various criteria
-- **Filter**: Choose to view all stocks, only gainers, only losers, or unchanged stocks
-
-### View Charts
-
-Click on any stock card to view a detailed price chart with multiple time periods:
-- 1D (last 24 hours)
-- 5D (last 5 days)
-- 1M (last month)
-- 3M (last 3 months)
-- 1Y (last year)
-
-### Refresh Data
-
-- Click the "Refresh Data" button to manually update stock prices
-- Data automatically refreshes every 30 seconds
-
-## Technical Details
-
-### Technologies Used
-
-- HTML5
-- CSS3 (with Flexbox and Grid)
-- Vanilla JavaScript (ES6+)
-- Chart.js for data visualization
-
-### Data Source
-
-Currently, the app uses mock data for demonstration purposes. In a production environment, you would integrate with:
-- Yahoo Finance API
-- Alpha Vantage API
-- Real-time stock data providers
-- Custom backend API
-
-### Customization
-
-To connect to a real data source, modify the `generateMockStockData()` function in `app.js` to fetch from your API:
-
-```javascript
-async function fetchStockData() {
-    const response = await fetch('YOUR_API_ENDPOINT');
-    const data = await response.json();
-    // Process and update stocksData
-}
+```sh
+$ npm install serve-index
 ```
 
-## SSE 50 Constituents
+## API
 
-The app tracks these major Chinese companies:
-- Financial sector: ICBC, Bank of China, China Merchants Bank, Ping An Insurance
-- Energy: PetroChina, Sinopec, China Shenhua
-- Consumer goods: Kweichow Moutai, Inner Mongolia Yili
-- Technology: WuXi AppTec, GigaDevice Semiconductor
-- And 40+ other leading Chinese companies
+```js
+var serveIndex = require('serve-index')
+```
 
-## Browser Compatibility
+### serveIndex(path, options)
 
-- Chrome/Edge: Full support
-- Firefox: Full support
-- Safari: Full support
-- IE11: Not supported (uses modern JavaScript features)
+Returns middlware that serves an index of the directory in the given `path`.
 
-## Future Enhancements
+The `path` is based off the `req.url` value, so a `req.url` of `'/some/dir`
+with a `path` of `'public'` will look at `'public/some/dir'`. If you are using
+something like `express`, you can change the URL "base" with `app.use` (see
+the express example).
 
-Potential features for future versions:
-- Integration with real-time stock APIs
-- User watchlists and favorites
-- Price alerts and notifications
-- Technical indicators (RSI, MACD, etc.)
-- News feed for each stock
-- Export data to CSV/Excel
-- Dark mode
-- Multi-language support
+#### Options
+
+Serve index accepts these properties in the options object.
+
+##### filter
+
+Apply this filter function to files. Defaults to `false`. The `filter` function
+is called for each file, with the signature `filter(filename, index, files, dir)`
+where `filename` is the name of the file, `index` is the array index, `files` is
+the array of files and `dir` is the absolute path the file is located (and thus,
+the directory the listing is for).
+
+##### hidden
+
+Display hidden (dot) files. Defaults to `false`.
+
+##### icons
+
+Display icons. Defaults to `false`.
+
+##### stylesheet
+
+Optional path to a CSS stylesheet. Defaults to a built-in stylesheet.
+
+##### template
+
+Optional path to an HTML template or a function that will render a HTML
+string. Defaults to a built-in template.
+
+When given a string, the string is used as a file path to load and then the
+following tokens are replaced in templates:
+
+  * `{directory}` with the name of the directory.
+  * `{files}` with the HTML of an unordered list of file links.
+  * `{linked-path}` with the HTML of a link to the directory.
+  * `{style}` with the specified stylesheet and embedded images.
+
+When given as a function, the function is called as `template(locals, callback)`
+and it needs to invoke `callback(error, htmlString)`. The following are the
+provided locals:
+
+  * `directory` is the directory being displayed (where `/` is the root).
+  * `displayIcons` is a Boolean for if icons should be rendered or not.
+  * `fileList` is a sorted array of files in the directory. The array contains
+    objects with the following properties:
+    - `name` is the relative name for the file.
+    - `stat` is a `fs.Stats` object for the file.
+  * `path` is the full filesystem path to `directory`.
+  * `style` is the default stylesheet or the contents of the `stylesheet` option.
+  * `viewName` is the view name provided by the `view` option.
+
+##### view
+
+Display mode. `tiles` and `details` are available. Defaults to `tiles`.
+
+## Examples
+
+### Serve directory indexes with vanilla node.js http server
+
+```js
+var finalhandler = require('finalhandler')
+var http = require('http')
+var serveIndex = require('serve-index')
+var serveStatic = require('serve-static')
+
+// Serve directory indexes for public/ftp folder (with icons)
+var index = serveIndex('public/ftp', {'icons': true})
+
+// Serve up public/ftp folder files
+var serve = serveStatic('public/ftp')
+
+// Create server
+var server = http.createServer(function onRequest(req, res){
+  var done = finalhandler(req, res)
+  serve(req, res, function onNext(err) {
+    if (err) return done(err)
+    index(req, res, done)
+  })
+})
+
+// Listen
+server.listen(3000)
+```
+
+### Serve directory indexes with express
+
+```js
+var express    = require('express')
+var serveIndex = require('serve-index')
+
+var app = express()
+
+// Serve URLs like /ftp/thing as public/ftp/thing
+// The express.static serves the file contents
+// The serveIndex is this module serving the directory
+app.use('/ftp', express.static('public/ftp'), serveIndex('public/ftp', {'icons': true}))
+
+// Listen
+app.listen(3000)
+```
 
 ## License
 
-This project is open source and available for personal and educational use.
+[MIT](LICENSE). The [Silk](http://www.famfamfam.com/lab/icons/silk/) icons
+are created by/copyright of [FAMFAMFAM](http://www.famfamfam.com/).
 
-## Disclaimer
-
-This application is for informational purposes only. Stock prices shown are mock data for demonstration. Always consult official financial sources and professional advisors before making investment decisions.
+[npm-image]: https://img.shields.io/npm/v/serve-index.svg
+[npm-url]: https://npmjs.org/package/serve-index
+[travis-image]: https://img.shields.io/travis/expressjs/serve-index/master.svg?label=linux
+[travis-url]: https://travis-ci.org/expressjs/serve-index
+[appveyor-image]: https://img.shields.io/appveyor/ci/dougwilson/serve-index/master.svg?label=windows
+[appveyor-url]: https://ci.appveyor.com/project/dougwilson/serve-index
+[coveralls-image]: https://img.shields.io/coveralls/expressjs/serve-index/master.svg
+[coveralls-url]: https://coveralls.io/r/expressjs/serve-index?branch=master
+[downloads-image]: https://img.shields.io/npm/dm/serve-index.svg
+[downloads-url]: https://npmjs.org/package/serve-index
+[gratipay-image]: https://img.shields.io/gratipay/dougwilson.svg
+[gratipay-url]: https://www.gratipay.com/dougwilson/
